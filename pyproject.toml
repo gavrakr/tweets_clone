@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "tweets-clone"
+version = "0.1.0"
+description = ""
+authors = ["Yang Seungwon <gavrakr@naver.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+django = "4.1"
+pillow = "10.4"
+djangorestframework = "3.15"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
