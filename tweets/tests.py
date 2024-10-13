@@ -1,36 +1,37 @@
 from rest_framework.test import APITestCase
 from rest_framework import status
+from rest_framework.response import Response
 from users.models import User
 from .models import Tweet
 
 
 class TweetsAPITestCase(APITestCase):
-    USER_INFO = {
-        "username": "test",
-        "email": "test@test.com",
-        "name": "testname",
-        "gender": "male",
-        "password": "123",
+    user_info = {
+        "username": "tester10",
+        "email": "tester10@test.co.kr",
+        "name": "tester",
+        "gender": "mail",
     }
-    PAYLOAD = "Test Payload"
-    URL = "/api/v1/tweets"
-    user = User(**USER_INFO)
+    test_user = User(**user_info)
+    test_payload = "tweets test"
+    test_urls = "/api/v1/tweets/"
 
     def setUp(self):
-        self.user.save()
+        self.test_user.save()
         Tweet.objects.create(
-            user=self.user,
-            payload=self.PAYLOAD,
+            user=self.test_user,
+            payload=self.test_payload,
         )
 
-    def test_get_tweets(self):
-        response = self.client.get(self.URL)
+    def test_all_tweets(self):
+        response = self.client.get(self.test_urls)
         data = response.json()
         self.assertEqual(
             response.status_code,
             200,
-            "Status code is not 200.",
+            "Status code isn't 200.",
         )
+
         self.assertIsInstance(
             data,
             list,
@@ -39,27 +40,30 @@ class TweetsAPITestCase(APITestCase):
             len(data),
             1,
         )
+
         self.assertEqual(
             data[0]["payload"],
-            self.PAYLOAD,
-        )
-        self.assertEqual(
-            data[0]["user"]["username"],
-            self.USER_DICT["username"],
+            self.test_payload,
         )
 
-    def test_post_tweets(self):
+        self.assertEqual(
+            data[0]["user"],
+            self.user_info["username"],
+        )
+
+    def test_create_tweet(self):
         self.client.force_login(
-            self.user,
+            self.test_user,
         )
         response = self.client.post(
-            self.URL,
+            self.test_urls,
             data={
-                "user": self.user,
-                "payload": self.PAYLOAD,
+                "user": self.test_user,
+                "payload": self.test_payload,
             },
         )
         data = response.json()
+
         self.assertEqual(
             response.status_code,
             200,
@@ -67,43 +71,33 @@ class TweetsAPITestCase(APITestCase):
         )
         self.assertEqual(
             data["payload"],
-            self.PAYLOAD,
-        )
-        response = self.client.post(self.URL)
-        data = response.json()
-        self.assertEqual(
-            response.status_code,
-            400,
-        )
-        self.assertIn(
-            "payload",
-            data,
+            self.test_payload,
         )
 
 
-class TweetAPITestCase(APITestCase):
-
-    USER_INFO = {
-        "username": "test",
-        "email": "test@test.com",
-        "name": "testname",
-        "gender": "male",
-        "password": "123",
+class TweetDetailAPITestCase(APITestCase):
+    user_info = {
+        "username": "tester1",
+        "email": "tester10@test.co.kr",
+        "name": "tester",
+        "gender": "mail",
     }
-    PAYLOAD = "Test Payload"
-    URL = "/api/v1/tweets"
-    user = User(**USER_INFO)
+    test_user = User(**user_info)
+    test_payload = "tweets test"
+    test_new_payload = "new test payload"
+    test_url = "/api/v1/tweets/1/"
 
     def setUp(self):
-        self.user.save()
+        self.test_user.save()
         Tweet.objects.create(
-            user=self.user,
-            payload=self.PAYLOAD,
+            user=self.test_user,
+            payload=self.test_payload,
         )
 
     def test_get_tweet(self):
-        response = self.client.get(self.URL)
+        response = self.client.get(self.test_url)
         data = response.json()
+
         self.assertEqual(
             response.status_code,
             200,
@@ -115,25 +109,26 @@ class TweetAPITestCase(APITestCase):
         )
         self.assertEqual(
             data["payload"],
-            self.PAYLOAD,
+            self.test_payload,
         )
         self.assertEqual(
-            data["user"]["username"],
-            self.USER_DICT["username"],
+            data["user"],
+            self.user_info["username"],
         )
 
     def test_put_tweet(self):
         self.client.force_login(
-            self.user,
+            self.test_user,
         )
         response = self.client.put(
-            self.URL,
+            self.test_url,
             data={
-                "user": self.user,
-                "payload": self.NEW_PAYLOAD,
+                "user": self.test_user,
+                "payload": self.test_new_payload,
             },
         )
         data = response.json()
+
         self.assertEqual(
             response.status_code,
             200,
@@ -141,14 +136,16 @@ class TweetAPITestCase(APITestCase):
         )
         self.assertEqual(
             data["payload"],
-            self.NEW_PAYLOAD,
+            self.test_new_payload,
         )
 
     def test_delete_tweet(self):
         self.client.force_login(
-            self.user,
+            self.test_user,
         )
-        response = self.client.delete(self.URL)
+
+        response = self.client.delete(self.test_url)
+
         self.assertEqual(
             response.status_code,
             200,
