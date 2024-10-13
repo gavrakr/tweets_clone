@@ -1,6 +1,7 @@
-from django.shortcuts import render
+from django.db import transaction
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.exceptions import ParseError
 from rest_framework.status import HTTP_204_NO_CONTENT
 from .models import Tweet
 from .models import User
@@ -18,7 +19,19 @@ class Tweets(APIView):
         return Response(serializer.data)
 
     def post(self, request):
-        pass
+        serializer = TweetSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                with transaction.atomic():
+                    new_tweet = serializer.save(
+                        user=request.user,
+                    )
+                serializer = TweetSerializer(new_tweet)
+                return Response(serializer.data)
+            except Exception:
+                raise ParseError
+        else:
+            return Response(serializer.errors)
 
 
 class TweetDefail(APIView):
